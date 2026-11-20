@@ -1,0 +1,47 @@
+---
+// /status/: sends visitors to the current incident while one is active;
+// otherwise says all is well and lists past incidents.
+//
+// ADAPT: Base is your site's base layout; see the note in IncidentView.astro.
+import Base from "../../layouts/Base.astro";
+import IncidentIcon from "../../components/IncidentIcon.astro";
+import { INCIDENT_CONFIG } from "../../lib/incident-config";
+import { loadIncidents } from "../../lib/incident-data";
+import { currentIncident, formatTime, incidentUrl, lastChanged } from "../../lib/incidents";
+import { STATUS_FEED, STATUS_ROBOTS } from "../../lib/status-feed";
+
+const { incidents, cacheHint } = await loadIncidents();
+const current = currentIncident(incidents);
+// A redirect is never cached, so it ends as soon as the banner does.
+if (current) return Astro.redirect(incidentUrl(current.slug), 302);
+if (Astro.cache?.enabled && cacheHint) Astro.cache.set(cacheHint);
+const past = incidents.map((i) => ({ title: i.title, url: incidentUrl(i.slug), date: lastChanged(i) }));
+---
+
+<Base title="Service notices" description="Notices about outages that affect how you reach us." robots={STATUS_ROBOTS} feed={STATUS_FEED}>
+	<main class="incident-page">
+		<header class="incident-header">
+			<h1>Service notices</h1>
+			<p class="incident-summary">
+				There is no active service notice right now.
+				{INCIDENT_CONFIG.statusPageUrl && <>For live service status, see <a href={INCIDENT_CONFIG.statusPageUrl}>our status page</a>.</>}
+			</p>
+		</header>
+		{
+			past.length > 0 && (
+				<>
+					<h2 class="incident-updates-heading">Past notices</h2>
+					<ul class="incident-past">
+						{past.map((p) => (
+							<li>
+								<a href={p.url}>{p.title}</a>
+								{p.date && <time datetime={p.date.toISOString()}>{formatTime(p.date)}</time>}
+							</li>
+						))}
+					</ul>
+				</>
+			)
+		}
+		<p class="incident-feed"><a href={STATUS_FEED.href}><IncidentIcon name="rss" />Follow service notices by RSS</a></p>
+	</main>
+</Base>

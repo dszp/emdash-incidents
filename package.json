@@ -1,0 +1,12 @@
+{
+	"name": "emdash-incidents",
+	"private": true,
+	"type": "module",
+	"description": "Kit files for EmDash incident notices; copied into a site, not installed as a package.",
+	"scripts": {
+		"test": "vitest run"
+	},
+	"devDependencies": {
+		"vitest": "^5.0.3"
+	}
+}

@@ -1,0 +1,14 @@
+---
+// Plain text with [label](url) links (src/lib/inline-links.ts).
+import { inlineLinks } from "../lib/inline-links";
+
+const { text } = Astro.props as { text: string };
+---
+
+{inlineLinks(text).map((part) =>
+	"href" in part ? (
+		<a href={part.href} target={part.newTab ? "_blank" : undefined} rel={part.newTab ? "noopener" : undefined}>{part.text}</a>
+	) : (
+		part.text
+	),
+)}

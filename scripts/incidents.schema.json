@@ -1,0 +1,90 @@
+{
+	"slug": "incidents",
+	"label": "Incidents",
+	"labelSingular": "Incident",
+	"urlPattern": "/status/{slug}",
+	"supports": [
+		"drafts",
+		"revisions",
+		"preview"
+	],
+	"fields": [
+		{
+			"slug": "title",
+			"label": "Title (status page heading, e.g. Microsoft 365 outage)",
+			"type": "string",
+			"required": true
+		},
+		{
+			"slug": "banner",
+			"label": "Banner text (one or two sentences shown on every page)",
+			"type": "text",
+			"required": true
+		},
+		{
+			"slug": "started_at",
+			"label": "Started (when the outage began; blank uses the publish time)",
+			"type": "datetime"
+		},
+		{
+			"slug": "resolved_at",
+			"label": "Resolved (turns the banner green; it hides 24 hours later)",
+			"type": "datetime"
+		},
+		{
+			"slug": "active",
+			"label": "Show banner on every page",
+			"type": "boolean",
+			"defaultValue": false
+		},
+		{
+			"slug": "link_updates",
+			"label": "Banner links to this incident's updates page",
+			"type": "boolean",
+			"defaultValue": true
+		},
+		{
+			"slug": "contact",
+			"label": "Contact shown in the banner and on the updates page",
+			"type": "multiSelect",
+			"defaultValue": [
+				"phone"
+			],
+			"validation": {
+				"options": [
+					"phone",
+					"email"
+				]
+			}
+		},
+		{
+			"slug": "contact_email",
+			"label": "Alternate email address (shown when email is checked)",
+			"type": "string"
+		},
+		{
+			"slug": "pinned",
+			"label": "Pinned note (top of the updates page; [label](url) makes a link)",
+			"type": "text"
+		},
+		{
+			"slug": "updates",
+			"label": "Updates (newest shown first)",
+			"type": "repeater",
+			"validation": {
+				"subFields": [
+					{
+						"slug": "posted_at",
+						"label": "Posted (blank uses the save time)",
+						"type": "datetime"
+					},
+					{
+						"slug": "message",
+						"label": "Update ([label](url) makes a link)",
+						"type": "text"
+					}
+				]
+			}
+		}
+	]
+}

@@ -1,0 +1,74 @@
+---
+// An incident's page at /status/<slug>/: what is happening, how to reach you,
+// the pinned note, then every update, newest first.
+//
+// ADAPT: Base is your site's base layout. This page passes it title and
+// description. Status pages should also carry <meta name="robots"
+// content="noindex, follow"> (STATUS_ROBOTS) and a <link rel="alternate"> to
+// the feed (STATUS_FEED); pass them however your layout accepts head content.
+import Base from "../layouts/Base.astro";
+import IncidentIcon from "./IncidentIcon.astro";
+import InlineText from "./InlineText.astro";
+import { contactLinks, formatTime, lastChanged, showsBanner, type Incident } from "../lib/incidents";
+import { STATUS_FEED, STATUS_ROBOTS } from "../lib/status-feed";
+
+const { incident } = Astro.props as { incident: Incident };
+const contacts = contactLinks(incident);
+const changed = lastChanged(incident);
+// Turned off without a Resolved time still reads as over.
+const resolved = incident.resolvedAt !== null || !incident.active;
+---
+
+<Base title={incident.title} description={incident.banner} robots={STATUS_ROBOTS} feed={STATUS_FEED}>
+	<main class="incident-page">
+		<header class="incident-header">
+			{/* While its banner is up, /status/ redirects back here. */}
+			<p class="incident-eyebrow">{showsBanner(incident) ? "Service notice" : <a href="/status/">All service notices</a>}</p>
+			<h1>{incident.title}</h1>
+			<p class="incident-summary"><InlineText text={incident.banner} /></p>
+			<p class="incident-meta">
+				<span class:list={["incident-state", resolved ? "is-resolved" : "is-ongoing"]}>{resolved ? "Resolved" : "Ongoing"}</span>
+				{incident.startedAt && <span>Started <time datetime={incident.startedAt.toISOString()}>{formatTime(incident.startedAt)}</time></span>}
+				{incident.resolvedAt && <span>Resolved <time datetime={incident.resolvedAt.toISOString()}>{formatTime(incident.resolvedAt)}</time></span>}
+				{changed && changed !== incident.startedAt && <span>Last updated <time datetime={changed.toISOString()}>{formatTime(changed)}</time></span>}
+			</p>
+		</header>
+		{
+			contacts.length > 0 && (
+				<p class="incident-contact">
+					<span>Reach us:</span>
+					{contacts.map((c) => (
+						<a href={c.href}>
+							<IncidentIcon name={c.method} />
+							{c.label}
+						</a>
+					))}
+				</p>
+			)
+		}
+		{
+			incident.pinned && (
+				<div class="incident-pinned">
+					<p class="incident-pinned-label"><IncidentIcon name="thumbtack" />Pinned</p>
+					<p class="incident-text"><InlineText text={incident.pinned} /></p>
+				</div>
+			)
+		}
+		<h2 class="incident-updates-heading">Updates</h2>
+		{
+			incident.updates.length > 0 ? (
+				<ol class:list={["incident-updates", resolved && "is-resolved"]}>
+					{incident.updates.map((u) => (
+						<li id={u.postedAt.toISOString()}>
+							<time datetime={u.postedAt.toISOString()}>{formatTime(u.postedAt)}</time>
+							<p class="incident-text"><InlineText text={u.message} /></p>
+						</li>
+					))}
+				</ol>
+			) : (
+				<p>No updates yet. Check back here for news.</p>
+			)
+		}
+		<p class="incident-feed"><a href={STATUS_FEED.href}><IncidentIcon name="rss" />Follow service notices by RSS</a></p>
+	</main>
+</Base>

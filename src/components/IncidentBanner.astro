@@ -1,0 +1,47 @@
+---
+// The notice at the top of every page while an incident's banner is up
+// (src/lib/incidents.ts): yellow while it is ongoing, green once it is
+// resolved. Render it from your base layout, with the incident your layout
+// loaded through loadIncidents(), so the incidents' cache hint covers every
+// page (see INSTALL.md, "Cache wiring").
+import IncidentIcon from "./IncidentIcon.astro";
+import InlineText from "./InlineText.astro";
+import { contactLinks, incidentUrl, type Incident } from "../lib/incidents";
+import { inlineLinks } from "../lib/inline-links";
+
+const { incident } = Astro.props as { incident: Incident };
+const url = incidentUrl(incident.slug);
+const onItsPage = Astro.url.pathname.replace(/\/*$/, "/") === url;
+const contacts = contactLinks(incident);
+// When the banner links to the updates page, its whole message is that link
+// (a large tap target on a phone), so [label](url) links in the text become
+// plain labels: a link can't sit inside another.
+const linked = incident.linkUpdates && !onItsPage;
+const plainText = inlineLinks(incident.banner).map((p) => p.text).join("");
+---
+
+<aside class:list={["incident-banner", incident.resolvedAt && "is-resolved"]} aria-label="Service notice">
+	<div class="incident-banner-inner">
+		<IncidentIcon name={incident.resolvedAt ? "check-circle" : "warning"} class="incident-banner-icon" />
+		<p class="incident-banner-text">
+			{linked ? <a href={url}>{plainText}</a> : <InlineText text={incident.banner} />}
+		</p>
+		{
+			(contacts.length > 0 || linked) && (
+				<p class="incident-banner-actions">
+					{contacts.map((c) => (
+						<a href={c.href}>
+							<IncidentIcon name={c.method} />
+							{c.label}
+						</a>
+					))}
+					{linked && (
+						<a class="incident-banner-more" href={url} aria-hidden="true" tabindex="-1">
+							See updates →
+						</a>
+					)}
+				</p>
+			)
+		}
+	</div>
+</aside>

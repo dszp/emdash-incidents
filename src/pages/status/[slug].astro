@@ -1,0 +1,15 @@
+---
+// /status/<slug>/: one incident and its updates (src/lib/incidents.ts).
+import { decodeSlug } from "emdash";
+
+import IncidentView from "../../components/IncidentView.astro";
+import { loadIncident } from "../../lib/incident-data";
+
+const slug = decodeSlug(Astro.params.slug);
+const found = slug ? await loadIncident(slug) : null;
+// ADAPT: the path of your site's 404 page.
+if (!found) return Astro.rewrite("/404");
+if (Astro.cache?.enabled) Astro.cache.set(found.cacheHint);
+---
+
+<IncidentView incident={found.incident} />
